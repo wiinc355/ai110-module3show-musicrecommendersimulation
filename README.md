@@ -17,17 +17,33 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Explain your design in plain language.
+This music recommender uses a **content-based filtering** approach. Instead of learning from many users, it compares each song's features to one user's taste profile and gives that song a score. The songs with the highest scores become the recommendations.
 
-Some prompts to answer:
+Each song in `songs.csv` stores descriptive features that capture its overall vibe: `genre`, `mood`, `energy`, `tempo_bpm`, `valence`, `danceability`, and `acousticness`. The `UserProfile` stores matching target preferences, such as a favorite genre, favorite mood, and ideal values for those numeric features. For example, a user who likes focused lofi music might prefer lower energy, slower tempo, and higher acousticness.
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+### Algorithm Recipe
 
-You can include a simple diagram or bullet list if helpful.
+For every song in the CSV:
+
+1. Start the song's score at `0`.
+2. Add **2.0 points** if the song's genre matches the user's favorite genre.
+3. Add **1.0 point** if the song's mood matches the user's favorite mood.
+4. Add similarity points based on how close the song is to the user's target values:
+   - `energy`: up to **1.5** points
+   - `tempo_bpm`: up to **1.0** point
+   - `valence`: up to **1.0** point
+   - `danceability`: up to **0.75** point
+   - `acousticness`: up to **0.75** point
+5. Save the final score for that song.
+6. Repeat for every song in the dataset.
+7. Rank all songs from highest score to lowest score.
+8. Recommend the top results.
+
+This design makes the scoring easy to explain: exact category matches matter, but songs can still earn points when their audio features are close to the user's ideal profile.
+
+### Potential Biases
+
+This system might **over-prioritize genre**, which could cause it to ignore songs from other genres that still match the user's mood or audio preferences well. It is also limited by the small dataset, so genres or moods with fewer examples may be recommended less often even if they would fit the user's taste.
 
 ---
 
@@ -73,6 +89,20 @@ Use this section to document the experiments you ran. For example:
 - What happened when you changed the weight on genre from 2.0 to 0.5
 - What happened when you added tempo or valence to the score
 - How did your system behave for different types of users
+
+## CLI Verification
+
+I ran the command below to verify the recommender output in the terminal:
+
+```bash
+python -m src.main
+```
+
+For the default profile (`genre=pop`, `mood=happy`, `energy=0.8`), the top results matched expectations. Songs like `Sunrise City` ranked at the top because they matched both the preferred genre and mood and were also close on energy.
+
+Add your terminal screenshot here after running the program:
+
+![CLI recommendation output](docs/cli-output-screenshot.png)
 
 ---
 
@@ -208,4 +238,3 @@ A few sentences about what you learned:
 - What surprised you about how your system behaved
 - How did building this change how you think about real music recommenders
 - Where do you think human judgment still matters, even if the model seems "smart"
-
